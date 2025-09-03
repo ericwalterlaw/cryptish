@@ -14,7 +14,6 @@ const Dashboard = () => {
     setUserData(user);
 
     fetchPortfolioData();
-    fetchRecentTransactions();
   }, []);
 
   const fetchPortfolioData = async () => {
@@ -56,12 +55,7 @@ const Dashboard = () => {
       change: 0,
       icon: '🪙'
     },
-    {
-      label: 'Recent Transactions',
-      value: recentTransactions.length?.toString(),
-      change: 0,
-      icon: '📊'
-    }
+
   ];
 
   return (
@@ -152,16 +146,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Recent Transactions */}
-          <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
-            <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Recent Activity</h2>
-                <button className="text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors">
-                  View All
-                </button>
-              </div>
-            </div>
 
             {/* Quick Actions */}
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-6">
