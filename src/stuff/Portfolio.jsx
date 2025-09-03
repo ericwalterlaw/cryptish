@@ -45,18 +45,27 @@ const Portfolio = () => {
       }
     } catch {
       // Mock fallback
-    
     }
   };
 
   const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-    });
+    dateString
+      ? new Date(dateString).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '';
 
   const getTotalGainLoss = (asset) => {
-    const gainLoss = (asset.currentPrice - asset.avgPrice) * asset.amount;
-    const gainLossPercentage = ((asset.currentPrice - asset.avgPrice) / asset.avgPrice) * 100;
+    const currentPrice = asset.currentPrice ?? 0;
+    const avgPrice = asset.avgPrice ?? 1; // prevent divide by zero
+    const amount = asset.amount ?? 0;
+
+    const gainLoss = (currentPrice - avgPrice) * amount;
+    const gainLossPercentage = ((currentPrice - avgPrice) / avgPrice) * 100;
     return { gainLoss, gainLossPercentage };
   };
 
@@ -84,32 +93,48 @@ const Portfolio = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 animate-slide-up hover:-translate-y-1 hover:shadow-lg transition">
             <h3 className="text-gray-400 text-sm mb-2">Total Value</h3>
-            <p className="text-3xl font-bold text-white">${portfolioData.totalValue.toLocaleString()}</p>
-            <p className={`text-sm ${portfolioData.gainPercentage > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {portfolioData.gainPercentage > 0 ? '↗' : '↘'} {portfolioData.gainPercentage.toFixed(2)}%
+            <p className="text-3xl font-bold text-white">
+              ${(portfolioData.totalValue ?? 0).toLocaleString()}
+            </p>
+            <p
+              className={`text-sm ${
+                (portfolioData.gainPercentage ?? 0) > 0 ? 'text-green-500' : 'text-red-500'
+              }`}
+            >
+              {(portfolioData.gainPercentage ?? 0) > 0 ? '↗' : '↘'}{' '}
+              {(portfolioData.gainPercentage ?? 0).toFixed(2)}%
             </p>
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 animate-slide-up hover:-translate-y-1 hover:shadow-lg transition delay-100">
             <h3 className="text-gray-400 text-sm mb-2">Total Gain/Loss</h3>
-            <p className={`text-3xl font-bold ${portfolioData.totalGain > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {portfolioData.totalGain > 0 ? '+' : ''}${portfolioData.totalGain.toLocaleString()}
+            <p
+              className={`text-3xl font-bold ${
+                (portfolioData.totalGain ?? 0) > 0 ? 'text-green-500' : 'text-red-500'
+              }`}
+            >
+              {(portfolioData.totalGain ?? 0) > 0 ? '+' : ''}$
+              {(portfolioData.totalGain ?? 0).toLocaleString()}
             </p>
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 animate-slide-up hover:-translate-y-1 hover:shadow-lg transition delay-200">
             <h3 className="text-gray-400 text-sm mb-2">Active Assets</h3>
-            <p className="text-3xl font-bold text-white">{portfolioData.assets.length}</p>
+            <p className="text-3xl font-bold text-white">
+              {portfolioData.assets?.length ?? 0}
+            </p>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden animate-slide-up">
           <div className="flex border-b border-gray-700">
-            {['holdings', 'transactions'].map(tab => (
+            {['holdings', 'transactions'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 px-6 py-4 font-medium transition ${
-                  activeTab === tab ? 'bg-gray-900 text-blue-500 border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'
+                  activeTab === tab
+                    ? 'bg-gray-900 text-blue-500 border-b-2 border-blue-500'
+                    : 'text-gray-400 hover:text-white'
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -120,13 +145,16 @@ const Portfolio = () => {
           {/* Holdings */}
           {activeTab === 'holdings' && (
             <div className="p-6 space-y-4">
-              {portfolioData.assets.length === 0 ? (
+              {portfolioData.assets?.length === 0 ? (
                 <p className="text-center text-gray-400">No holdings yet. Start trading!</p>
               ) : (
                 portfolioData.assets.map((asset, index) => {
                   const { gainLoss, gainLossPercentage } = getTotalGainLoss(asset);
                   return (
-                    <div key={index} className="bg-gray-900 rounded-lg p-6 animate-slide-up">
+                    <div
+                      key={index}
+                      className="bg-gray-900 rounded-lg p-6 animate-slide-up"
+                    >
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
                         <div className="flex items-center space-x-4">
                           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center">
@@ -134,30 +162,52 @@ const Portfolio = () => {
                           </div>
                           <div>
                             <p className="font-semibold text-white">{asset.name}</p>
-                            <p className="text-gray-400 text-sm">{asset.amount} {asset.symbol}</p>
+                            <p className="text-gray-400 text-sm">
+                              {asset.amount ?? 0} {asset.symbol}
+                            </p>
                           </div>
                         </div>
                         <div>
                           <p className="text-gray-400 text-sm">Current Price</p>
-                          <p className="font-semibold text-white">${asset.currentPrice.toLocaleString()}</p>
+                          <p className="font-semibold text-white">
+                            ${(asset.currentPrice ?? 0).toLocaleString()}
+                          </p>
                         </div>
                         <div>
                           <p className="text-gray-400 text-sm">Value</p>
-                          <p className="font-semibold text-white">${asset.value.toLocaleString()}</p>
-                          <p className="text-gray-400 text-sm">{asset.allocation}% of portfolio</p>
+                          <p className="font-semibold text-white">
+                            ${(asset.value ?? 0).toLocaleString()}
+                          </p>
+                          <p className="text-gray-400 text-sm">
+                            {asset.allocation ?? 0}% of portfolio
+                          </p>
                         </div>
                         <div>
                           <p className="text-gray-400 text-sm">Gain/Loss</p>
-                          <p className={`font-semibold ${gainLoss > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {gainLoss > 0 ? '+' : ''}${Math.abs(gainLoss).toLocaleString()}
+                          <p
+                            className={`font-semibold ${
+                              gainLoss > 0 ? 'text-green-500' : 'text-red-500'
+                            }`}
+                          >
+                            {gainLoss > 0 ? '+' : ''}$
+                            {Math.abs(gainLoss ?? 0).toLocaleString()}
                           </p>
-                          <p className={`text-sm ${gainLossPercentage > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {gainLossPercentage > 0 ? '+' : ''}{gainLossPercentage.toFixed(2)}%
+                          <p
+                            className={`text-sm ${
+                              gainLossPercentage > 0 ? 'text-green-500' : 'text-red-500'
+                            }`}
+                          >
+                            {gainLossPercentage > 0 ? '+' : ''}
+                            {(gainLossPercentage ?? 0).toFixed(2)}%
                           </p>
                         </div>
                         <div className="flex space-x-2 justify-center lg:justify-end">
-                          <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">Buy</button>
-                          <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">Sell</button>
+                          <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+                            Buy
+                          </button>
+                          <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
+                            Sell
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -170,35 +220,74 @@ const Portfolio = () => {
           {/* Transactions */}
           {activeTab === 'transactions' && (
             <div className="p-6 overflow-x-auto">
-              {transactions.length === 0 ? (
+              {transactions?.length === 0 ? (
                 <p className="text-center text-gray-400">No transactions yet.</p>
               ) : (
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-700">
-                      {['Date', 'Type', 'Asset', 'Amount', 'Price', 'Fee', 'Total', 'Status'].map(h => (
-                        <th key={h} className="py-3 text-left text-gray-400 font-medium">{h}</th>
+                      {[
+                        'Date',
+                        'Type',
+                        'Asset',
+                        'Amount',
+                        'Price',
+                        'Fee',
+                        'Total',
+                        'Status',
+                      ].map((h) => (
+                        <th
+                          key={h}
+                          className="py-3 text-left text-gray-400 font-medium"
+                        >
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {transactions.map((tx, i) => (
-                      <tr key={tx.id} className="border-b border-gray-700 hover:bg-gray-900/50 transition animate-slide-up">
-                        <td className="py-3 text-white text-sm">{formatDate(tx.date)}</td>
+                      <tr
+                        key={tx.id ?? i}
+                        className="border-b border-gray-700 hover:bg-gray-900/50 transition animate-slide-up"
+                      >
+                        <td className="py-3 text-white text-sm">
+                          {formatDate(tx.date)}
+                        </td>
                         <td>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            tx.type === 'buy' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
-                          }`}>{tx.type.toUpperCase()}</span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              tx.type === 'buy'
+                                ? 'bg-green-500/20 text-green-500'
+                                : 'bg-red-500/20 text-red-500'
+                            }`}
+                          >
+                            {tx.type?.toUpperCase()}
+                          </span>
                         </td>
                         <td className="py-3 text-white font-medium">{tx.symbol}</td>
-                        <td className="py-3 text-white text-right">{tx.amount} {tx.symbol}</td>
-                        <td className="py-3 text-white text-right">${tx.price.toLocaleString()}</td>
-                        <td className="py-3 text-gray-400 text-right">${tx.fee}</td>
-                        <td className="py-3 text-white font-medium text-right">${tx.total.toLocaleString()}</td>
+                        <td className="py-3 text-white text-right">
+                          {tx.amount ?? 0} {tx.symbol}
+                        </td>
+                        <td className="py-3 text-white text-right">
+                          ${(tx.price ?? 0).toLocaleString()}
+                        </td>
+                        <td className="py-3 text-gray-400 text-right">
+                          ${(tx.fee ?? 0).toLocaleString()}
+                        </td>
+                        <td className="py-3 text-white font-medium text-right">
+                          ${(tx.total ?? 0).toLocaleString()}
+                        </td>
                         <td className="py-3 text-center">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            tx.status === 'completed' ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-400'
-                          }`}>{tx.status}</span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              tx.status === 'completed'
+                                ? 'bg-green-500/20 text-green-500'
+                                : 'bg-yellow-500/20 text-yellow-400'
+                            }`}
+                          >
+                            {tx.status ?? 'pending'}
+                          </span>
                         </td>
                       </tr>
                     ))}
