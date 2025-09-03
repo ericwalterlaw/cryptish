@@ -8,12 +8,14 @@ const Dashboard = () => {
     gainPercentage: 0,
     assets: []
   });
+  const [recentTransactions, setRecentTransactions] = useState([]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setUserData(user);
 
     fetchPortfolioData();
+    fetchRecentTransactions();
   }, []);
 
   const fetchPortfolioData = async () => {
@@ -31,31 +33,60 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching portfolio data:', error);
-
     }
   };
 
+  const fetchRecentTransactions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('https://cryptobackend-1r20.onrender.com/api/transactions/recent', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Transactions API response:", data);
+
+        if (Array.isArray(data)) {
+          setRecentTransactions(data);
+        } else if (Array.isArray(data.transactions)) {
+          setRecentTransactions(data.transactions);
+        } else {
+          setRecentTransactions([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    }
+  };
 
   const quickStats = [
     {
       label: 'Total Portfolio Value',
-      value: `$${portfolioData.totalValue}`,
-      change: portfolioData.gainPercentage,
+      value: `$${(portfolioData.totalValue ?? 0).toLocaleString()}`,
+      change: portfolioData.gainPercentage ?? 0,
       icon: '💰'
     },
     {
       label: 'Total Gain/Loss',
-      value: `$${portfolioData.totalGain}`,
-      change: portfolioData.gainPercentage,
+      value: `$${(portfolioData.totalGain ?? 0).toLocaleString()}`,
+      change: portfolioData.gainPercentage ?? 0,
       icon: '📈'
     },
     {
       label: 'Active Assets',
-      value: portfolioData.assets.length.toString(),
+      value: (portfolioData.assets?.length ?? 0).toString(),
       change: 0,
       icon: '🪙'
     },
-
+    {
+      label: 'Recent Transactions',
+      value: (recentTransactions?.length ?? 0).toString(),
+      change: 0,
+      icon: '📊'
+    }
   ];
 
   return (
@@ -84,10 +115,10 @@ const Dashboard = () => {
                   {stat.change !== 0 && (
                     <p
                       className={`text-sm flex items-center mt-1 ${
-                        stat.change > 0 ? 'text-green-500' : 'text-red-500'
+                        (stat.change ?? 0) > 0 ? 'text-green-500' : 'text-red-500'
                       }`}
                     >
-                      {stat.change > 0 ? '↗' : '↘'} {Math.abs(stat.change).toFixed(2)}%
+                      {(stat.change ?? 0) > 0 ? '↗' : '↘'} {Math.abs(stat.change ?? 0).toFixed(2)}%
                     </p>
                   )}
                 </div>
@@ -111,7 +142,7 @@ const Dashboard = () => {
                 </button>
               </div>
               <div className="space-y-4">
-                {portfolioData.assets.map((asset, index) => (
+                {portfolioData.assets?.map((asset, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-4 bg-gray-900 rounded-lg hover:bg-opacity-80 transition-colors"
@@ -123,21 +154,21 @@ const Dashboard = () => {
                       <div>
                         <p className="font-semibold text-white">{asset.name}</p>
                         <p className="text-gray-400 text-sm">
-                          {asset.amount} {asset.symbol}
+                          {asset.amount ?? 0} {asset.symbol}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-white">
-                        ${asset.value}
+                        ${(asset.value ?? 0).toLocaleString()}
                       </p>
                       <p
                         className={`text-sm ${
-                          asset.change > 0 ? 'text-green-500' : 'text-red-500'
+                          (asset.change ?? 0) > 0 ? 'text-green-500' : 'text-red-500'
                         }`}
                       >
-                        {asset.change > 0 ? '+' : ''}
-                        {asset.change.toFixed(2)}%
+                        {(asset.change ?? 0) > 0 ? '+' : ''}
+                        {(asset.change ?? 0).toFixed(2)}%
                       </p>
                     </div>
                   </div>
@@ -148,6 +179,49 @@ const Dashboard = () => {
 
           {/* Recent Transactions */}
           <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
+            <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Recent Activity</h2>
+                <button className="text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors">
+                  View All
+                </button>
+              </div>
+              <div className="space-y-4">
+                {recentTransactions.slice(0, 5).map((transaction, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-900 rounded-lg"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          transaction.type === 'buy'
+                            ? 'bg-green-500/20 text-green-500'
+                            : 'bg-red-500/20 text-red-500'
+                        }`}
+                      >
+                        {transaction.type === 'buy' ? '↗' : '↘'}
+                      </div>
+                      <div>
+                        <p className="font-medium text-white text-sm">
+                          {transaction.type?.toUpperCase()} {transaction.symbol}
+                        </p>
+                        <p className="text-gray-400 text-xs">{transaction.date}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white text-sm font-medium">
+                        {transaction.amount ?? 0} {transaction.symbol}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        ${(transaction.price ?? 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Quick Actions */}
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-6">
               <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
