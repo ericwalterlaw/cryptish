@@ -48,7 +48,7 @@ const Dashboard = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setRecentTransactions(data);
+        setRecentTransactions(data) 
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
