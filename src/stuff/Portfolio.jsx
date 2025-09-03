@@ -35,10 +35,16 @@ const Portfolio = () => {
 
   const fetchTransactions = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('https://cryptobackend-1r20.onrender.com/api/transactions', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const token = localStorage.getItem('token');
+
+    const response = await fetch('https://cryptobackend-1r20.onrender.com/api/portfolio', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // ✅ important
+      }
+    });
+
       if (response.ok) {
         const data = await response.json();
         setTransactions(data);
