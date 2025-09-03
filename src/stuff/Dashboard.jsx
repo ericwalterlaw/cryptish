@@ -146,7 +146,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-
+          {/* Recent Transactions */}
+          <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
             {/* Quick Actions */}
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-6">
               <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
