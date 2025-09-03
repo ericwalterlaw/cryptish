@@ -8,7 +8,6 @@ const Dashboard = () => {
     gainPercentage: 0,
     assets: []
   });
-  const [recentTransactions, setRecentTransactions] = useState([]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -37,23 +36,6 @@ const Dashboard = () => {
     }
   };
 
-  const fetchRecentTransactions = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('https://cryptobackend-1r20.onrender.com/api/transactions/recent', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setRecentTransactions(data) 
-      }
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    }
-  };
 
   const quickStats = [
     {
@@ -178,40 +160,6 @@ const Dashboard = () => {
                 <button className="text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors">
                   View All
                 </button>
-              </div>
-              <div className="space-y-4">
-                {recentTransactions?.slice(0, 5).map((transaction, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-gray-900 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          transaction.type === 'buy'
-                            ? 'bg-green-500/20 text-green-500'
-                            : 'bg-red-500/20 text-red-500'
-                        }`}
-                      >
-                        {transaction.type === 'buy' ? '↗' : '↘'}
-                      </div>
-                      <div>
-                        <p className="font-medium text-white text-sm">
-                          {transaction.type.toUpperCase()} {transaction.symbol}
-                        </p>
-                        <p className="text-gray-400 text-xs">{transaction.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white text-sm font-medium">
-                        {transaction.amount} {transaction.symbol}
-                      </p>
-                      <p className="text-gray-400 text-xs">
-                        ${transaction.price.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
 
