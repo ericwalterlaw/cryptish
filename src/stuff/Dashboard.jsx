@@ -39,13 +39,13 @@ const Dashboard = () => {
   const quickStats = [
     {
       label: 'Total Portfolio Value',
-      value: `$${portfolioData.totalValue?.toLocaleString()}`,
+      value: `$${portfolioData.totalValue}`,
       change: portfolioData.gainPercentage,
       icon: '💰'
     },
     {
       label: 'Total Gain/Loss',
-      value: `$${portfolioData.totalGain.toLocaleString()}`,
+      value: `$${portfolioData.totalGain}`,
       change: portfolioData.gainPercentage,
       icon: '📈'
     },
@@ -129,7 +129,7 @@ const Dashboard = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-white">
-                        ${asset.value?.toLocaleString()}
+                        ${asset.value}
                       </p>
                       <p
                         className={`text-sm ${
